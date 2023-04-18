@@ -91,7 +91,6 @@
                  this.storageGetPromise = null;
                  if (!this.initialized) {
                      this.initialized = true;
-                     this.stateChangedCallback?.(this.state);
                  }
              } finally {
                  this.loading = false;
@@ -116,7 +115,6 @@
                      this.storagePutPromise = this.storage.put(JSON.stringify(this.data));
                      await this.storagePutPromise;
                      this.dirty = this.changedWhileSaving;
-                     this.stateChangedCallback?.(this.state);
                  } finally {
                      this.saving = false;
                      this.stateChangedCallback?.(this.state);
@@ -126,10 +124,6 @@
                  await this.storagePutPromise;
              }
          }
-     }
- 
-     private async initialize() {
-         await this.load();
      }
  
      private loadFromString(jsonString: string): void {
