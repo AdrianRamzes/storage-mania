@@ -77,7 +77,7 @@ export class DataService {
   async load(): Promise<void> {
     const disallowedStates = [DataServiceState.Dirty, DataServiceState.Saving];
     if (disallowedStates.some((x) => x === this.state)) {
-      throw Error(this.state);
+      throw Error(`Cannot call this method when the state is: ${this.state}`);
     }
     if (this.storageGetPromise == null) {
       this.loading = true;
