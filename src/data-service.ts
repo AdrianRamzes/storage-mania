@@ -14,7 +14,7 @@
  *
  */
 
-import { Storage } from "./storage";
+import { Storage } from "./storage/storage.interface";
 
 export class DataService {
   get state(): DataServiceState {

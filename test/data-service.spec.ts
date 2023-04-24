@@ -1,5 +1,5 @@
 import { DataService, DataServiceState } from "../src/data-service";
-import { Storage } from "../src/storage";
+import { Storage } from "../src/storage/storage.interface";
 
 /** TODO: Check what if storage returns {'key': null}
  * and check repositories how do they react to that?
