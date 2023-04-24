@@ -10,8 +10,9 @@ import {
 
 import { firebaseConfig } from "./firebaseExports"; // this file is only present locally
 import { testUsers } from "./firebaseTestUsers"; // this file is only present locally
+import { deleteObject, getStorage, ref } from "@firebase/storage";
 
-describe.skip("FirebaseStorage (uses real Firebase Storage account)", () => {
+describe("FirebaseStorage (uses real Firebase Storage account)", () => {
   let storage: FirebaseStorage;
   let firebaseAuth: Auth;
 
@@ -33,6 +34,14 @@ describe.skip("FirebaseStorage (uses real Firebase Storage account)", () => {
 
   afterAll(async () => {
     await signOut(firebaseAuth);
+  });
+
+  test("get creates file if not exists", async () => {
+    await deleteObject(ref(getStorage(), testUsers.testUser1.url));
+
+    const result = await storage.get();
+
+    expect(result).toBe("");
   });
 
   test("loads string from files stored at Firebase Storage", async () => {
