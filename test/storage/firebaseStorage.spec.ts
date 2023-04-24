@@ -12,7 +12,7 @@ import { firebaseConfig } from "./firebaseExports"; // this file is only present
 import { testUsers } from "./firebaseTestUsers"; // this file is only present locally
 import { deleteObject, getStorage, ref } from "@firebase/storage";
 
-describe("FirebaseStorage (uses real Firebase Storage account)", () => {
+describe.skip("FirebaseStorage (uses real Firebase Storage account)", () => {
   let storage: FirebaseStorage;
   let firebaseAuth: Auth;
 
