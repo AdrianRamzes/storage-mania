@@ -16,8 +16,8 @@
 
 import { Storage } from "./storage/storage.interface";
 
-export class DataService {
-  get state(): DataServiceState {
+export class StorageMania {
+  get state(): StorageState {
     return this.getState();
   }
 
@@ -33,7 +33,7 @@ export class DataService {
 
   constructor(
     private storage: Storage,
-    private stateChangedCallback?: (_: DataServiceState) => void,
+    private stateChangedCallback?: (_: StorageState) => void,
     private dataChangedCallback?: (_: string) => void
   ) {}
 
@@ -50,9 +50,9 @@ export class DataService {
 
   set(key: string, value: any) {
     const disallowedStates = [
-      DataServiceState.Uninitialized,
-      DataServiceState.Initializing,
-      DataServiceState.Loading,
+      StorageState.Uninitialized,
+      StorageState.Initializing,
+      StorageState.Loading,
     ];
     if (disallowedStates.some((x) => x === this.state)) {
       throw Error(this.state);
@@ -75,7 +75,7 @@ export class DataService {
    * Loads data from storage.
    */
   async load(): Promise<void> {
-    const disallowedStates = [DataServiceState.Dirty, DataServiceState.Saving];
+    const disallowedStates = [StorageState.Dirty, StorageState.Saving];
     if (disallowedStates.some((x) => x === this.state)) {
       throw Error(`Cannot call this method when the state is: ${this.state}`);
     }
@@ -104,8 +104,8 @@ export class DataService {
    */
   async save(): Promise<void> {
     if (
-      this.state === DataServiceState.Dirty ||
-      this.state === DataServiceState.Saving
+      this.state === StorageState.Dirty ||
+      this.state === StorageState.Saving
     ) {
       if (this.storagePutPromise == null) {
         this.saving = true;
@@ -153,28 +153,28 @@ export class DataService {
     return JSON.stringify(valueA) === JSON.stringify(valueB);
   }
 
-  private getState(): DataServiceState {
+  private getState(): StorageState {
     if (!this.initialized) {
       if (this.loading) {
-        return DataServiceState.Initializing;
+        return StorageState.Initializing;
       }
-      return DataServiceState.Uninitialized;
+      return StorageState.Uninitialized;
     }
     if (this.loading) {
-      return DataServiceState.Loading;
+      return StorageState.Loading;
     }
     if (this.saving) {
-      return DataServiceState.Saving;
+      return StorageState.Saving;
     }
     if (this.dirty) {
-      return DataServiceState.Dirty;
+      return StorageState.Dirty;
     }
 
-    return DataServiceState.Ready;
+    return StorageState.Ready;
   }
 }
 
-export enum DataServiceState {
+export enum StorageState {
   Uninitialized = "Uninitialized",
   Initializing = "Initializing",
   Loading = "Loading",

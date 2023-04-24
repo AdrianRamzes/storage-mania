@@ -2,8 +2,8 @@
   "name": "storage-mania",
   "version": "0.0.0",
   "description": "",
-  "main": "lib/data-service.js",
-  "types": "lib/data-service.d.ts",
+  "main": "lib/storageMania.js",
+  "types": "lib/storageMania.d.ts",
   "files": [
     "lib/**/*"
   ],

@@ -1,4 +1,4 @@
-import { DataService, DataServiceState } from "../src/data-service";
+import { StorageMania, StorageState } from "../src/storageMania";
 import { Storage } from "../src/storage/storage.interface";
 
 /** TODO: Check what if storage returns {'key': null}
@@ -17,169 +17,169 @@ class TestStorage implements Storage {
   put: (data: string) => Promise<void>;
 }
 
-describe("DataService", () => {
+describe("StorageMania", () => {
   const _ = new TestStorage();
 
   test("is in Uninitialized state after creation", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
 
-    expect(dataService.state).toBe(DataServiceState.Uninitialized);
+    expect(dataService.state).toBe(StorageState.Uninitialized);
   });
 
   // Uninitialized -load()-> Initializing
   test("is in Initializing state after load() is called for the first time", () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
 
     dataService.load();
 
-    expect(dataService.state).toBe(DataServiceState.Initializing);
+    expect(dataService.state).toBe(StorageState.Initializing);
   });
 
   // Uninitialized -load() finished-> Ready
   test("is in Ready state after first load() is finished", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
 
     await dataService.load();
 
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
   });
 
   // Uninitialized -load() failed-> Uninitialized
   test("stays in Uninitialized state when load() failed", async () => {
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(() => Promise.reject("some reason"))
     );
 
     await expect(dataService.load()).rejects.toEqual("some reason");
 
-    expect(dataService.state).toBe(DataServiceState.Uninitialized);
+    expect(dataService.state).toBe(StorageState.Uninitialized);
   });
 
   // Ready -load()-> Loading
   test("is in Loading state after load() is called", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
 
     dataService.load();
 
-    expect(dataService.state).toBe(DataServiceState.Loading);
+    expect(dataService.state).toBe(StorageState.Loading);
   });
 
   // Ready -await load()-> Ready
   test("is back in Ready state after load() is called", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
 
     await dataService.load();
 
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
   });
 
   // Ready -save()-> Ready
   test("stays in Ready state after save() is called", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
 
     dataService.save();
 
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
   });
 
   // Ready -set()-> Dirty
   test("is in Dirty state after set() is called", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
 
     dataService.set("key1", "value1");
 
-    expect(dataService.state).toBe(DataServiceState.Dirty);
+    expect(dataService.state).toBe(StorageState.Dirty);
   });
 
   // Dirty -save()-> Saving
   test("is in Saving state after save() is called", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
     dataService.set("key1", "value1");
-    expect(dataService.state).toBe(DataServiceState.Dirty);
+    expect(dataService.state).toBe(StorageState.Dirty);
 
     dataService.save();
 
-    expect(dataService.state).toBe(DataServiceState.Saving);
+    expect(dataService.state).toBe(StorageState.Saving);
   });
 
   // Saving -save() finished-> Ready
   test("is back in Ready state after save() is finished", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
     dataService.set("key1", "value1");
     const savePromise = dataService.save();
-    expect(dataService.state).toBe(DataServiceState.Saving);
+    expect(dataService.state).toBe(StorageState.Saving);
 
     await savePromise;
 
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
   });
 
   // Saving -save() failed-> Dirty
   test("stays in Dirty state when save failed", async () => {
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(undefined, () => Promise.reject("some reason"))
     );
     await dataService.load();
     dataService.set("key1", "value1");
     const savePromise = dataService.save();
-    expect(dataService.state).toBe(DataServiceState.Saving);
+    expect(dataService.state).toBe(StorageState.Saving);
 
     await expect(savePromise).rejects.toEqual("some reason");
 
-    expect(dataService.state).toBe(DataServiceState.Dirty);
+    expect(dataService.state).toBe(StorageState.Dirty);
   });
 
   // Saving -set()-> Dirty
   test("is back in Dirty state when set was called while saving", async () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
     await dataService.load();
     dataService.set("key1", "value1");
     const savePromise = dataService.save();
-    expect(dataService.state).toBe(DataServiceState.Saving);
+    expect(dataService.state).toBe(StorageState.Saving);
 
     dataService.set("key2", "value2");
     await savePromise;
 
-    expect(dataService.state).toBe(DataServiceState.Dirty);
+    expect(dataService.state).toBe(StorageState.Dirty);
   });
 
   describe("calls back when state changed", () => {
     test("from Uninitialized to Initializing", () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
 
       dataService.load();
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Initializing],
+        [StorageState.Initializing],
       ]);
     });
 
     test("from Initializing to Ready", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
 
       await dataService.load();
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Initializing],
-        [DataServiceState.Ready],
+        [StorageState.Initializing],
+        [StorageState.Ready],
       ]);
     });
 
     test("from Initializing back to Uninitialized", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(
+      const dataService = new StorageMania(
         new TestStorage(() => Promise.reject("some reason")),
         stateChangedCallback
       );
@@ -187,68 +187,62 @@ describe("DataService", () => {
       await expect(dataService.load()).rejects.toEqual("some reason");
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Initializing],
-        [DataServiceState.Uninitialized],
+        [StorageState.Initializing],
+        [StorageState.Uninitialized],
       ]);
     });
 
     test("from Ready to Loading", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
       await dataService.load();
       stateChangedCallback.mockClear();
 
       dataService.load();
 
-      expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Loading],
-      ]);
+      expect(stateChangedCallback.mock.calls).toEqual([[StorageState.Loading]]);
     });
 
     test("from Loading back to Ready", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
       await dataService.load();
       stateChangedCallback.mockClear();
 
       await dataService.load();
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Loading],
-        [DataServiceState.Ready],
+        [StorageState.Loading],
+        [StorageState.Ready],
       ]);
     });
 
     test("from Ready to Dirty", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
       await dataService.load();
       stateChangedCallback.mockClear();
 
       dataService.set("myKey", "myValue");
 
-      expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Dirty],
-      ]);
+      expect(stateChangedCallback.mock.calls).toEqual([[StorageState.Dirty]]);
     });
 
     test("from Dirty to Saving", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
       await dataService.load();
       dataService.set("myKey", "myValue");
       stateChangedCallback.mockClear();
 
       dataService.save();
 
-      expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Saving],
-      ]);
+      expect(stateChangedCallback.mock.calls).toEqual([[StorageState.Saving]]);
     });
 
     test("from Saving to Ready", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
       await dataService.load();
       dataService.set("myKey", "myValue");
       stateChangedCallback.mockClear();
@@ -256,14 +250,14 @@ describe("DataService", () => {
       await dataService.save();
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Saving],
-        [DataServiceState.Ready],
+        [StorageState.Saving],
+        [StorageState.Ready],
       ]);
     });
 
     test("from Saving to Dirty when changed", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(_, stateChangedCallback);
+      const dataService = new StorageMania(_, stateChangedCallback);
       await dataService.load();
       dataService.set("not", "important");
       stateChangedCallback.mockClear();
@@ -273,14 +267,14 @@ describe("DataService", () => {
       await savePromise;
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Saving],
-        [DataServiceState.Dirty],
+        [StorageState.Saving],
+        [StorageState.Dirty],
       ]);
     });
 
     test("from Saving to Dirty when saving failed", async () => {
       const stateChangedCallback = jest.fn();
-      const dataService = new DataService(
+      const dataService = new StorageMania(
         new TestStorage(undefined, () => Promise.reject("some reason")),
         stateChangedCallback
       );
@@ -291,8 +285,8 @@ describe("DataService", () => {
       await expect(dataService.save()).rejects.toEqual("some reason");
 
       expect(stateChangedCallback.mock.calls).toEqual([
-        [DataServiceState.Saving],
-        [DataServiceState.Dirty],
+        [StorageState.Saving],
+        [StorageState.Dirty],
       ]);
     });
   });
@@ -302,7 +296,7 @@ describe("in Uninitialized state", () => {
   const _ = new TestStorage();
 
   test("get returns null (no data)", () => {
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(async () => {
         return JSON.stringify({ myKey: "myValue" });
       })
@@ -312,7 +306,7 @@ describe("in Uninitialized state", () => {
   });
 
   test("set throws error", () => {
-    const dataService = new DataService(_);
+    const dataService = new StorageMania(_);
 
     expect(() => dataService.set("myKey", "myValue")).toThrowError(
       "Uninitialized"
@@ -321,7 +315,7 @@ describe("in Uninitialized state", () => {
 
   test("load calls storage.get()", () => {
     const storageGet = jest.fn(() => Promise.resolve("test"));
-    const dataService = new DataService(new TestStorage(storageGet));
+    const dataService = new StorageMania(new TestStorage(storageGet));
 
     dataService.load();
 
@@ -330,26 +324,28 @@ describe("in Uninitialized state", () => {
 
   test("save does nothing", async () => {
     const storagePut = jest.fn((_) => Promise.resolve());
-    const dataService = new DataService(new TestStorage(undefined, storagePut));
+    const dataService = new StorageMania(
+      new TestStorage(undefined, storagePut)
+    );
 
     dataService.save();
 
     expect(storagePut).not.toBeCalled();
-    expect(dataService.state).toBe(DataServiceState.Uninitialized);
+    expect(dataService.state).toBe(StorageState.Uninitialized);
   });
 });
 
 describe("in Initializing state", () => {
   const _ = new TestStorage();
 
-  const createDataServiceInInitializingState = (storage: TestStorage = _) => {
-    const ds = new DataService(storage);
+  const createStorageManiaInInitializingState = (storage: TestStorage = _) => {
+    const ds = new StorageMania(storage);
     ds.load();
     return ds;
   };
 
   test("get returns null", () => {
-    const dataService = createDataServiceInInitializingState(
+    const dataService = createStorageManiaInInitializingState(
       new TestStorage(async () => JSON.stringify({ myKey: "myValue" }))
     );
 
@@ -357,7 +353,7 @@ describe("in Initializing state", () => {
   });
 
   test("set throws error", () => {
-    const dataService = createDataServiceInInitializingState();
+    const dataService = createStorageManiaInInitializingState();
 
     expect(() => dataService.set("myKey", "myValue")).toThrowError(
       "Initializing"
@@ -367,18 +363,18 @@ describe("in Initializing state", () => {
   test("save does nothing", async () => {
     const storagePut = jest.fn((_) => Promise.resolve());
     const storageMock = new TestStorage(undefined, storagePut);
-    const dataService = createDataServiceInInitializingState(storageMock);
+    const dataService = createStorageManiaInInitializingState(storageMock);
 
     dataService.save();
 
     expect(storagePut).not.toBeCalled();
-    expect(dataService.state).toBe(DataServiceState.Initializing);
+    expect(dataService.state).toBe(StorageState.Initializing);
   });
 
   test("load does not make extra calls to storage", () => {
     const storageGet = jest.fn(() => Promise.resolve("data"));
     const storageMock = new TestStorage(storageGet);
-    const dataService = createDataServiceInInitializingState(storageMock);
+    const dataService = createStorageManiaInInitializingState(storageMock);
 
     dataService.load();
     dataService.load();
@@ -399,14 +395,14 @@ describe("in Ready state", () => {
     () => Promise.resolve()
   );
 
-  const createDataServiceInReadyState = async (storage: TestStorage = _) => {
-    const dataService = new DataService(storage);
+  const createStorageManiaInReadyState = async (storage: TestStorage = _) => {
+    const dataService = new StorageMania(storage);
     await dataService.load();
     return dataService;
   };
 
   test("get returns correct value", async () => {
-    const dataService = await createDataServiceInReadyState(
+    const dataService = await createStorageManiaInReadyState(
       new TestStorage(async () => {
         return JSON.stringify({
           myKey: "myValue",
@@ -418,7 +414,7 @@ describe("in Ready state", () => {
   });
 
   test("set sets correct value", async () => {
-    const dataService = await createDataServiceInReadyState();
+    const dataService = await createStorageManiaInReadyState();
 
     dataService.set("myKey", "someValue123");
 
@@ -427,22 +423,24 @@ describe("in Ready state", () => {
 
   test("save does nothing", async () => {
     const storagePut = jest.fn((_) => Promise.resolve());
-    const dataService = new DataService(new TestStorage(undefined, storagePut));
+    const dataService = new StorageMania(
+      new TestStorage(undefined, storagePut)
+    );
 
     dataService.save();
 
     expect(storagePut).not.toBeCalled();
-    expect(dataService.state).toBe(DataServiceState.Uninitialized);
+    expect(dataService.state).toBe(StorageState.Uninitialized);
   });
 
   test("load calls storage", async () => {
     const storageGet = jest.fn(() => Promise.resolve(""));
-    const dataService = new DataService(new TestStorage(storageGet));
+    const dataService = new StorageMania(new TestStorage(storageGet));
 
     dataService.save();
 
     expect(storageGet).not.toBeCalled();
-    expect(dataService.state).toBe(DataServiceState.Uninitialized);
+    expect(dataService.state).toBe(StorageState.Uninitialized);
   });
 });
 
@@ -454,10 +452,10 @@ describe("in Dirty state", () => {
   test("load throws error", async () => {
     const storagePut = jest.fn((_) => Promise.resolve());
     const storageMock = new TestStorage(undefined, storagePut);
-    const dataService = new DataService(storageMock);
+    const dataService = new StorageMania(storageMock);
     await dataService.load();
     dataService.set("make", "dirty");
-    expect(dataService.state).toBe(DataServiceState.Dirty);
+    expect(dataService.state).toBe(StorageState.Dirty);
 
     await expect(dataService.load()).rejects.toEqual(
       Error("Cannot call this method when the state is: Dirty")
@@ -469,11 +467,11 @@ describe("in Saving state", () => {
   test("save does not make extra calls to storage", async () => {
     const storagePut = jest.fn((_) => Promise.resolve());
     const storageMock = new TestStorage(undefined, storagePut);
-    const dataService = new DataService(storageMock);
+    const dataService = new StorageMania(storageMock);
     await dataService.load();
     dataService.set("make", "dirty");
     dataService.save();
-    expect(dataService.state).toBe(DataServiceState.Saving);
+    expect(dataService.state).toBe(StorageState.Saving);
 
     dataService.save();
     dataService.save();
@@ -485,11 +483,11 @@ describe("in Saving state", () => {
   test("load throws error", async () => {
     const storagePut = jest.fn((_) => Promise.resolve());
     const storageMock = new TestStorage(undefined, storagePut);
-    const dataService = new DataService(storageMock);
+    const dataService = new StorageMania(storageMock);
     await dataService.load();
     dataService.set("make", "dirty");
     dataService.save();
-    expect(dataService.state).toBe(DataServiceState.Saving);
+    expect(dataService.state).toBe(StorageState.Saving);
 
     await expect(dataService.load()).rejects.toEqual(
       Error("Cannot call this method when the state is: Saving")
@@ -498,14 +496,14 @@ describe("in Saving state", () => {
 });
 
 describe("Method", () => {
-  const createDataServiceInReadyState = async (storage: TestStorage) => {
-    const dataService = new DataService(storage);
+  const createStorageManiaInReadyState = async (storage: TestStorage) => {
+    const dataService = new StorageMania(storage);
     await dataService.load();
     return dataService;
   };
 
   test("get returns a deep copy of stored value", async () => {
-    const dataService = await createDataServiceInReadyState(
+    const dataService = await createStorageManiaInReadyState(
       new TestStorage(async () => {
         return JSON.stringify({ myKey: [1, 2, 3] });
       })
@@ -518,7 +516,7 @@ describe("Method", () => {
 
   test("set triggers callback when data has changed", async () => {
     const dataChangedCallback = jest.fn();
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(),
       undefined,
       dataChangedCallback
@@ -532,7 +530,7 @@ describe("Method", () => {
 
   test("set does not trigger callback when data is no different", async () => {
     const dataChangedCallback = jest.fn();
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(() =>
         Promise.resolve(JSON.stringify({ myKey: "someValue123" }))
       ),
@@ -548,7 +546,7 @@ describe("Method", () => {
   });
 
   test("set does not change state when value is not different", async () => {
-    const dataService = await createDataServiceInReadyState(
+    const dataService = await createStorageManiaInReadyState(
       new TestStorage(async () => {
         return JSON.stringify({
           myKey: "the same value",
@@ -558,11 +556,11 @@ describe("Method", () => {
 
     dataService.set("myKey", "the same value");
 
-    expect(dataService.state).toBe(DataServiceState.Ready);
+    expect(dataService.state).toBe(StorageState.Ready);
   });
 
   test("load correctly parses simple json", async () => {
-    const dataService = await createDataServiceInReadyState(
+    const dataService = await createStorageManiaInReadyState(
       new TestStorage(() =>
         Promise.resolve(JSON.stringify({ myKey: "myValue" }))
       )
@@ -572,7 +570,7 @@ describe("Method", () => {
   });
 
   test("load correctly parses complex json", async () => {
-    const dataService = await createDataServiceInReadyState(
+    const dataService = await createStorageManiaInReadyState(
       new TestStorage(async () => {
         return JSON.stringify({
           myKey1: ["myValue"],
@@ -597,7 +595,7 @@ describe("Method", () => {
   });
 
   test("load handles empty storage", async () => {
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(async () => "", undefined)
     );
 
@@ -607,7 +605,7 @@ describe("Method", () => {
   });
 
   test('load handles invalid storage ("}}}")', async () => {
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(async () => "}}}", undefined)
     );
 
@@ -617,7 +615,7 @@ describe("Method", () => {
   });
 
   test("load handles invalid storage ('null')", async () => {
-    const dataService = new DataService(
+    const dataService = new StorageMania(
       new TestStorage(async () => "null", undefined)
     );
 
