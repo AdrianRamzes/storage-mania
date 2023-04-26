@@ -509,7 +509,7 @@ describe("Method", () => {
       })
     );
 
-    dataService.get("myKey")[0] = 4;
+    (dataService.get("myKey") as Array<number>)[0] = 4;
 
     expect(dataService.get("myKey")).toEqual([1, 2, 3]);
   });
@@ -587,11 +587,14 @@ describe("Method", () => {
 
     expect(dataService.get("myKey1")).toEqual(["myValue"]);
     expect(dataService.get("myKey2")).not.toBeNull();
-    expect(dataService.get("myKey2").subkey1).toEqual(123);
-    expect(dataService.get("myKey2").subkey2).toEqual(0.123456);
-    expect(dataService.get("myKey2").subkey3).toEqual(["str1", "str2"]);
-    expect(dataService.get("myKey2").subkey4).toBeNull();
-    expect(dataService.get("myKey2").subkey5).toEqual([1, 2, 3]);
+    expect((dataService.get("myKey2") as any).subkey1).toEqual(123);
+    expect((dataService.get("myKey2") as any).subkey2).toEqual(0.123456);
+    expect((dataService.get("myKey2") as any).subkey3).toEqual([
+      "str1",
+      "str2",
+    ]);
+    expect((dataService.get("myKey2") as any).subkey4).toBeNull();
+    expect((dataService.get("myKey2") as any).subkey5).toEqual([1, 2, 3]);
   });
 
   test("load handles empty storage", async () => {

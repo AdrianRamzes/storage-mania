@@ -1,11 +1,11 @@
 /**
  * !!README!!
  *
- * Posible states:
+ * Possible states:
  * https://drive.google.com/file/d/1UZJ-UiKBhspE8GxhW0BZRoCXe_E_jEaT/view?usp=sharing
- *                   |  loading  |  dirty   |   saving  |   initialised
+ *                   |  loading  |  dirty   |   saving  |   initialized
  * ------------------+-----------+----------+-----------+--------------
- * Uninitialized     |  fasle    |  false   |   false   |   false
+ * Uninitialized     |  false    |  false   |   false   |   false
  * Initializing      |  true     |  false   |   false   |   false
  * Ready:            |  false    |  false   |   false   |   true
  * Dirty:            |  false    |  true    |   false   |   true
@@ -26,7 +26,7 @@ export class StorageMania {
   private loading = false;
   private saving = false;
 
-  private data: { [key: string]: any } = {};
+  private data: { [key: string]: unknown } = {};
   private storageGetPromise: Promise<string> | null = null;
   private storagePutPromise: Promise<void> | null = null;
   private changedWhileSaving = false;
@@ -41,14 +41,14 @@ export class StorageMania {
     return key in this.data;
   }
 
-  get(key: string): any {
+  get(key: string): unknown {
     if (!this.containsKey(key)) {
       return null;
     }
     return this.deepClone(this.data[key]);
   }
 
-  set(key: string, value: any) {
+  set(key: string, value: unknown) {
     const disallowedStates = [
       StorageState.Uninitialized,
       StorageState.Initializing,
@@ -134,7 +134,7 @@ export class StorageMania {
     }
   }
 
-  private deserialize(serialized: string): { [key: string]: any } {
+  private deserialize(serialized: string): { [key: string]: unknown } {
     if (serialized.length === 0) {
       return {};
     }
@@ -145,11 +145,11 @@ export class StorageMania {
     }
   }
 
-  private deepClone(obj: any): any {
+  private deepClone<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
   }
 
-  private areEqual(valueA: any, valueB: any): boolean {
+  private areEqual<T>(valueA: T, valueB: T): boolean {
     return JSON.stringify(valueA) === JSON.stringify(valueB);
   }
 

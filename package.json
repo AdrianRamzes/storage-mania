@@ -1,7 +1,7 @@
 {
   "name": "storage-mania",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A key-value in memory database that can be synced with remote server/ftp/storage.",
   "main": "lib/storageMania.js",
   "types": "lib/storageMania.d.ts",
   "files": [
