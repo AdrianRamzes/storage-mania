@@ -1,6 +1,6 @@
 {
   "name": "storage-mania",
-  "version": "0.0.3",
+  "version": "0.0.9",
   "description": "A key-value in memory database that can be synced with remote server/ftp/storage.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,16 +8,16 @@
     "lib/**/*"
   ],
   "scripts": {
-    "build": "npx tsc -b",
-    "lint": "npx eslint --ignore-path .gitignore --ext .ts .",
+    "build": "npm run clean && npx tsc -b",
+    "clean": "rm -rf lib",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "lint": "npx eslint --ignore-path .gitignore --ext .ts .",
     "test": "npx jest --coverage"
   },
   "keywords": [],
   "author": "Adrian Karalus",
   "license": "MIT",
   "devDependencies": {
-    "@firebase/auth": "^0.23.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
@@ -27,8 +27,5 @@
     "prettier": "^2.8.7",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.3"
-  },
-  "dependencies": {
-    "@firebase/storage": "^0.11.2"
   }
 }

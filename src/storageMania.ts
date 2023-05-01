@@ -14,7 +14,7 @@
  *
  */
 
-import { Storage } from "./storage/storage.interface";
+import { Storage } from "./storage.interface";
 
 export class StorageMania {
   get state(): StorageState {
