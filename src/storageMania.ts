@@ -60,7 +60,7 @@ export class StorageMania {
     if (this.containsKey(key) && this.areEqual(this.get(key), value)) {
       return;
     }
-    this.data[key] = value;
+    this.data[key] = this.deepClone(value);
     this.dataChangedCallback?.(key);
     if (!this.dirty) {
       this.dirty = true;

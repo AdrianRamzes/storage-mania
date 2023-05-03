@@ -514,6 +514,20 @@ describe("Method", () => {
     expect(dataService.get("myKey")).toEqual([1, 2, 3]);
   });
 
+  test("set sets a deep copy of provided value", async () => {
+    const dataService = await createStorageManiaInReadyState(
+      new TestStorage(async () => {
+        return JSON.stringify({ myKey: [1, 2, 3] });
+      })
+    );
+
+    const arr = [1, 2, 3];
+    dataService.set("key1", arr);
+    arr.push(4);
+
+    expect(dataService.get("key1")).toEqual([1, 2, 3]);
+  });
+
   test("set triggers callback when data has changed", async () => {
     const dataChangedCallback = jest.fn();
     const dataService = new StorageMania(
