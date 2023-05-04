@@ -6,6 +6,7 @@ module.exports = {
     "<rootDir>/src/**/*.ts",
     "!<rootDir>/src/types/**/*.ts",
   ],
+  coveragePathIgnorePatterns: ["index.ts"],
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",
