@@ -1,5 +1,5 @@
 import { StorageMania, StorageState } from "../src/storageMania";
-import { Storage } from "../src/storage/storage.interface";
+import { Storage } from "../src/storage.interface";
 
 /** TODO: Check what if storage returns {'key': null}
  * and check repositories how do they react to that?
