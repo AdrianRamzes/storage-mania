@@ -41,6 +41,10 @@ export class StorageMania {
     return key in this.data;
   }
 
+  getKeys() {
+    return [...Object.keys(this.data)];
+  }
+
   get(key: string): unknown {
     if (!this.containsKey(key)) {
       return null;

@@ -640,4 +640,16 @@ describe("Method", () => {
 
     expect(dataService.get("someKey")).toBeNull();
   });
+
+  test("getKeys returns all keys in storage", async () => {
+    const dataService = await createStorageManiaInReadyState(
+      new TestStorage(() =>
+        Promise.resolve(
+          JSON.stringify({ myKey1: "myValue1", myKey2: "myValue2" })
+        )
+      )
+    );
+
+    expect(dataService.getKeys()).toEqual(["myKey1", "myKey2"]);
+  });
 });
