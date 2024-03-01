@@ -7,8 +7,8 @@ export interface RemoteStorage {
 export interface KeyValueStorage {
   containsKey(key: string): boolean;
   getKeys(): string[];
-  get(key: string): unknown;
-  set(key: string, value: unknown): void;
+  get(key: string): string | null;
+  set(key: string, value: string): void;
   /**
    * Loads data from remote storage.
    */
@@ -54,7 +54,7 @@ export class StorageMania implements KeyValueStorage {
   private loading = false;
   private saving = false;
 
-  private data: { [key: string]: unknown } = {};
+  private data: { [key: string]: string } = {};
   private storageGetPromise: Promise<string> | null = null;
   private storagePutPromise: Promise<void> | null = null;
   private changedWhileSaving = false;
@@ -73,26 +73,26 @@ export class StorageMania implements KeyValueStorage {
     return [...Object.keys(this.data)];
   }
 
-  get(key: string): unknown {
+  get(key: string): string | null {
     if (!this.containsKey(key)) {
       return null;
     }
-    return this.deepClone(this.data[key]);
+    return this.data[key];
   }
 
-  set(key: string, value: unknown) {
+  set(key: string, value: string) {
     const disallowedStates = [
       StorageState.Uninitialized,
       StorageState.Initializing,
       StorageState.Loading,
     ];
     if (disallowedStates.some((x) => x === this.state)) {
-      throw Error(this.state);
+      throw Error(`Cannot use set() when storage is in ${this.state} state`);
     }
-    if (this.containsKey(key) && this.areEqual(this.get(key), value)) {
+    if (this.containsKey(key) && this.get(key) == value) {
       return;
     }
-    this.data[key] = this.deepClone(value);
+    this.data[key] = value;
     this.dataChangedCallback?.(key);
     if (!this.dirty) {
       this.dirty = true;
@@ -109,7 +109,7 @@ export class StorageMania implements KeyValueStorage {
   async load(): Promise<void> {
     const disallowedStates = [StorageState.Dirty, StorageState.Saving];
     if (disallowedStates.some((x) => x === this.state)) {
-      throw Error(`Cannot call this method when the state is: ${this.state}`);
+      throw Error(`Cannot use load() when storage is in ${this.state} state`);
     }
     if (this.storageGetPromise == null) {
       this.loading = true;
@@ -166,7 +166,7 @@ export class StorageMania implements KeyValueStorage {
     }
   }
 
-  private deserialize(serialized: string): { [key: string]: unknown } {
+  private deserialize(serialized: string): { [key: string]: string } {
     if (serialized.length === 0) {
       return {};
     }
@@ -177,13 +177,13 @@ export class StorageMania implements KeyValueStorage {
     }
   }
 
-  private deepClone<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj));
-  }
+  // private deepClone<T>(obj: T): T {
+  //   return JSON.parse(JSON.stringify(obj));
+  // }
 
-  private areEqual<T>(valueA: T, valueB: T): boolean {
-    return JSON.stringify(valueA) === JSON.stringify(valueB);
-  }
+  // private areEqual<T>(valueA: T, valueB: T): boolean {
+  //   return JSON.stringify(valueA) === JSON.stringify(valueB);
+  // }
 
   private getState(): StorageState {
     if (!this.initialized) {

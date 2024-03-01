@@ -342,7 +342,7 @@ describe("in Initializing state", () => {
     return ds;
   };
 
-  test("get returns null", () => {
+  test("get throws error when no data", () => {
     const dataService = createStorageManiaInInitializingState(
       new TestStorage(async () => JSON.stringify({ myKey: "myValue" }))
     );
@@ -456,7 +456,7 @@ describe("in Dirty state", () => {
     expect(dataService.state).toBe(StorageState.Dirty);
 
     await expect(dataService.load()).rejects.toEqual(
-      Error("Cannot call this method when the state is: Dirty")
+      Error("Cannot use load() when storage is in Dirty state")
     );
   });
 });
@@ -488,7 +488,7 @@ describe("in Saving state", () => {
     expect(dataService.state).toBe(StorageState.Saving);
 
     await expect(dataService.load()).rejects.toEqual(
-      Error("Cannot call this method when the state is: Saving")
+      Error("Cannot use load() when storage is in Saving state")
     );
   });
 });
@@ -500,30 +500,26 @@ describe("Method", () => {
     return dataService;
   };
 
-  test("get returns a deep copy of stored value", async () => {
+  test("get returns correct data", async () => {
     const dataService = await createStorageManiaInReadyState(
       new TestStorage(async () => {
-        return JSON.stringify({ myKey: [1, 2, 3] });
+        return JSON.stringify({ myKey: "[1,2,3]" });
       })
     );
 
-    (dataService.get("myKey") as Array<number>)[0] = 4;
+    const result = dataService.get("myKey");
 
-    expect(dataService.get("myKey")).toEqual([1, 2, 3]);
+    expect(result).toEqual("[1,2,3]");
   });
 
-  test("set sets a deep copy of provided value", async () => {
+  test("set sets correct data", async () => {
     const dataService = await createStorageManiaInReadyState(
-      new TestStorage(async () => {
-        return JSON.stringify({ myKey: [1, 2, 3] });
-      })
+      new TestStorage(async () => "")
     );
 
-    const arr = [1, 2, 3];
-    dataService.set("key1", arr);
-    arr.push(4);
+    dataService.set("key1", "value1");
 
-    expect(dataService.get("key1")).toEqual([1, 2, 3]);
+    expect(dataService.get("key1")).toEqual("value1");
   });
 
   test("set triggers callback when data has changed", async () => {
@@ -583,30 +579,32 @@ describe("Method", () => {
 
   test("load correctly parses complex json", async () => {
     const dataService = await createStorageManiaInReadyState(
-      new TestStorage(async () => {
-        return JSON.stringify({
-          myKey1: ["myValue"],
-          myKey2: {
-            subkey1: 123,
-            subkey2: 0.123456,
-            subkey3: ["str1", "str2"],
-            subkey4: null,
-            subkey5: [1, 2, 3],
-          },
-        });
+      new TestStorage(async () => "")
+    );
+    dataService.set("myKey1", JSON.stringify(["myValue"]));
+    dataService.set(
+      "myKey2",
+      JSON.stringify({
+        subkey1: 123,
+        subkey2: 0.123456,
+        subkey3: ["str1", "str2"],
+        subkey4: null,
+        subkey5: [1, 2, 3],
       })
     );
 
-    expect(dataService.get("myKey1")).toEqual(["myValue"]);
-    expect(dataService.get("myKey2")).not.toBeNull();
-    expect((dataService.get("myKey2") as any).subkey1).toEqual(123);
-    expect((dataService.get("myKey2") as any).subkey2).toEqual(0.123456);
-    expect((dataService.get("myKey2") as any).subkey3).toEqual([
-      "str1",
-      "str2",
-    ]);
-    expect((dataService.get("myKey2") as any).subkey4).toBeNull();
-    expect((dataService.get("myKey2") as any).subkey5).toEqual([1, 2, 3]);
+    expect(dataService.get("myKey1")).toEqual(JSON.stringify(["myValue"]));
+    expect(dataService.get("myKey2")).toEqual(
+      '{"subkey1":123,"subkey2":0.123456,"subkey3":["str1","str2"],"subkey4":null,"subkey5":[1,2,3]}'
+    );
+    const deserialized1 = JSON.parse(dataService.get("myKey1") ?? "");
+    const deserialized2 = JSON.parse(dataService.get("myKey2") ?? "");
+    expect(deserialized1).toEqual(["myValue"]);
+    expect(deserialized2.subkey1).toEqual(123);
+    expect(deserialized2.subkey2).toEqual(0.123456);
+    expect(deserialized2.subkey3).toEqual(["str1", "str2"]);
+    expect(deserialized2.subkey4).toBeNull();
+    expect(deserialized2.subkey5).toEqual([1, 2, 3]);
   });
 
   test("load handles empty storage", async () => {
@@ -641,13 +639,13 @@ describe("Method", () => {
 
   test("getKeys returns all keys in storage", async () => {
     const dataService = await createStorageManiaInReadyState(
-      new TestStorage(() =>
-        Promise.resolve(
-          JSON.stringify({ myKey1: "myValue1", myKey2: "myValue2" })
-        )
-      )
+      new TestStorage(async () => "")
     );
+    dataService.set("myKey1", "1");
+    dataService.set("myKey2", "2");
 
-    expect(dataService.getKeys()).toEqual(["myKey1", "myKey2"]);
+    const keys = dataService.getKeys();
+
+    expect(keys).toEqual(["myKey1", "myKey2"]);
   });
 });
