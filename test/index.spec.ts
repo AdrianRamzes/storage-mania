@@ -627,6 +627,41 @@ describe("Method", () => {
     expect(dataService.get("someKey")).toBeNull();
   });
 
+  // In the past storage-mania allowed storing complex types. Not only strings or primitives.
+  // It is possible that already stored data has non-string type.
+  test("load handles deserialized value", async () => {
+    const dataService = new StorageMania(
+      new TestStorage(
+        async () =>
+          JSON.stringify({
+            numberValueKey: 123,
+            stringValueKey: "someString",
+            floatNumberKey: 123.123,
+            numbersArrayKey: [1, 2, 3],
+            stringsArrayKey: ["1", "2", "3"],
+            objectValueKey: { age: 22, name: "Adrian", height: 179.9 },
+          }),
+        undefined
+      )
+    );
+
+    await dataService.load();
+
+    expect(dataService.get("numberValueKey")).toEqual("123");
+    expect(dataService.get("stringValueKey")).toEqual("someString");
+    expect(dataService.get("floatNumberKey")).toEqual("123.123");
+    expect(dataService.get("numbersArrayKey")).toEqual("[1,2,3]");
+    expect(dataService.get("stringsArrayKey")).toEqual('["1","2","3"]');
+    expect(dataService.get("objectValueKey")).toEqual(
+      '{"age":22,"name":"Adrian","height":179.9}'
+    );
+    expect(JSON.parse(dataService.get("objectValueKey") ?? "")).toEqual({
+      age: 22,
+      name: "Adrian",
+      height: 179.9,
+    });
+  });
+
   test("load handles invalid storage ('null')", async () => {
     const dataService = new StorageMania(
       new TestStorage(async () => "null", undefined)

@@ -171,7 +171,16 @@ export class StorageMania implements KeyValueStorage {
       return {};
     }
     try {
-      return JSON.parse(serialized) ?? {};
+      const result: { [key: string]: string } = {};
+      const deserialized = JSON.parse(serialized) ?? {};
+      for (const key of Object.keys(deserialized)) {
+        if (typeof deserialized[key] == typeof "string") {
+          result[key] = deserialized[key];
+        } else {
+          result[key] = JSON.stringify(deserialized[key]);
+        }
+      }
+      return result;
     } catch (error) {
       return {};
     }
