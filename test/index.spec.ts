@@ -1,11 +1,9 @@
-import { StorageMania, StorageState } from "../src/storageMania";
-import { Storage } from "../src/storage.interface";
+import { RemoteStorage, StorageMania, StorageState } from "../src";
 
-/** TODO: Check what if storage returns {'key': null}
- * and check repositories how do they react to that?
- */
+// TODO: Check what if storage returns {'key': null}
+// and check repositories how do they react to that?
 
-class TestStorage implements Storage {
+class TestStorage implements RemoteStorage {
   constructor(
     get?: () => Promise<string>,
     put?: (data: string) => Promise<void>

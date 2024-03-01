@@ -1,6 +1,6 @@
 {
   "name": "storage-mania",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A key-value in memory database that can be synced with remote server/ftp/storage.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,10 +8,11 @@
     "lib/**/*"
   ],
   "scripts": {
-    "build": "npm run clean && npx tsc -b",
+    "build": "npm run clean && npx tsc -b && npm run minify",
     "clean": "rm -rf lib",
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "lint": "npx eslint --ignore-path .gitignore --ext .ts .",
+    "minify": "npx terser lib/index.js -o lib/index.js",
     "test": "npx jest --coverage"
   },
   "keywords": [],
@@ -25,6 +26,7 @@
     "eslint-config-prettier": "^8.8.0",
     "jest": "^29.5.0",
     "prettier": "^2.8.7",
+    "terser": "^5.28.1",
     "ts-jest": "^29.1.0",
     "typescript": "^5.0.3"
   }
